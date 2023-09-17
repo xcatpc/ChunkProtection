@@ -38,15 +38,15 @@ public class Claim implements CommandExecutor {
         UUID playerUUID = player.getUniqueId();
         int chunkID = getChunkID(player.getLocation());
 
-        if (checkChunkOwnership(playerUUID, chunkID, connection) == 1){
+        if (checkChunkOwnership(player, connection) == 1){
             player.sendMessage("Dieser Chunk Gehört schon dir");
             return true;
 
-        } else if (checkChunkOwnership(playerUUID, chunkID, connection) == 2) {
+        } else if (checkChunkOwnership(player, connection) == 2) {
             player.sendMessage("Dieser Chunk gehört jemand anderem");
             return true;
 
-        } else if (checkChunkOwnership(playerUUID, chunkID, connection) == 3) {
+        } else if (checkChunkOwnership(player, connection) == 3) {
             player.sendMessage("dieser chunk ist frei");
 
         } else {
@@ -55,7 +55,7 @@ public class Claim implements CommandExecutor {
         }
 
 
-        if (addClaimChunk(playerUUID, chunkID, connection)){
+        if (addClaimChunk(player, connection)){
             player.sendMessage("Suucesfuly add Chunk");
         } else {
             player.sendMessage("Error bitte das Team kontaktieren");

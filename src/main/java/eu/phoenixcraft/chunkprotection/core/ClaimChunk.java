@@ -2,6 +2,7 @@ package eu.phoenixcraft.chunkprotection.core;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import java.sql.Connection;
@@ -19,12 +20,18 @@ public class ClaimChunk {
         return chunkX + (chunkZ << 16); // Kombinieren Sie die X- und Z-Koordinaten, um die Chunk-ID zu erstellen
     }
 
-    public static boolean addClaimChunk(UUID playerUUID, int chunkID, Connection connection){
-        String insertQuery = "INSERT INTO claimed_chunks (player_uuid, chunk_id) VALUES (?, ?)";
+    public static boolean addClaimChunk(Player player, Connection connection) {
+        String insertQuery = "INSERT INTO claimed_chunks (player_uuid, chunk_id, world_name) VALUES (?, ?, ?)";
+
+        UUID playerUUID = player.getUniqueId();
+        Location location = player.getLocation();
+        String worldName = player.getWorld().getName();
+        int chunkID = getChunkID(location);
 
         try (PreparedStatement statement = connection.prepareStatement(insertQuery)) {
             statement.setString(1, playerUUID.toString());
             statement.setInt(2, chunkID);
+            statement.setString(3, worldName);
 
             int rowsAffected = statement.executeUpdate();
 
@@ -36,12 +43,19 @@ public class ClaimChunk {
         }
     }
 
-    public static boolean removeClaimedChunk(UUID playerUUID, int chunkID, Connection connection) {
-        String deleteQuery = "DELETE FROM claimed_chunks WHERE player_uuid = ? AND chunk_id = ?";
+
+    public static boolean removeClaimedChunk(Player player, Connection connection) {
+        String deleteQuery = "DELETE FROM claimed_chunks WHERE player_uuid = ? AND chunk_id = ? AND world_name = ?";
+
+        UUID playerUUID = player.getUniqueId();
+        Location location = player.getLocation();
+        String worldName = player.getWorld().getName();
+        int chunkID = getChunkID(location);
 
         try (PreparedStatement statement = connection.prepareStatement(deleteQuery)) {
             statement.setString(1, playerUUID.toString());
             statement.setInt(2, chunkID);
+            statement.setString(3, worldName);
 
             int rowsAffected = statement.executeUpdate();
 
@@ -52,15 +66,23 @@ public class ClaimChunk {
             return false; // Bei einem Fehler wird false zurückgegeben
         }
     }
+
     // give the owner of a chunk
     // 1 == gehört dem Spieler
     // 2 == gehört jemand anderem
     // 3 == ist noch frei
-    public static int checkChunkOwnership(UUID playerUUID, int chunkID, Connection connection) {
-        String query = "SELECT * FROM claimed_chunks WHERE chunk_id = ?";
+
+    public static int checkChunkOwnership(Player player, Connection connection) {
+        String query = "SELECT * FROM claimed_chunks WHERE chunk_id = ? AND world_name = ?";
+
+        UUID playerUUID = player.getUniqueId();
+        Location location = player.getLocation();
+        String worldName = player.getWorld().getName();
+        int chunkID = getChunkID(location);
 
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, chunkID);
+            statement.setString(2, worldName);
 
             ResultSet resultSet = statement.executeQuery();
 
@@ -84,6 +106,7 @@ public class ClaimChunk {
             return -1;
         }
     }
+
 
     public static Player getChunkOwner(int chunkID, Connection connection) {
         String query = "SELECT player_uuid FROM claimed_chunks WHERE chunk_id = ?";

@@ -63,9 +63,11 @@ public class MySQL {
         String sql = "CREATE TABLE IF NOT EXISTS claimed_chunks ( " +
                 "id INT AUTO_INCREMENT PRIMARY KEY, " +
                 "player_uuid VARCHAR(36), " +
-                "chunk_id INT)";
+                "chunk_id INT, " +
+                "world_name VARCHAR(255))"; // Füge die Spalte für den Weltnamen hinzu
         executeStatement(sql);
     }
+
 
     public void createChunkSettingsTable() {
         String sql = "CREATE TABLE IF NOT EXISTS chunk_settings ( " +
