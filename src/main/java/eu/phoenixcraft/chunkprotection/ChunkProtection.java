@@ -2,6 +2,7 @@ package eu.phoenixcraft.chunkprotection;
 
 import eu.phoenixcraft.chunkprotection.command.Claim;
 import eu.phoenixcraft.chunkprotection.storage.MySQL;
+import org.bukkit.Location;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class ChunkProtection extends JavaPlugin {
@@ -35,5 +36,8 @@ public final class ChunkProtection extends JavaPlugin {
     public MySQL getMysql(){
         return this.mysql;
     }
+
+
+
 
 }

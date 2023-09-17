@@ -22,7 +22,10 @@ public class MySQL {
     public boolean connect() {
         try {
             connection = DriverManager.getConnection(jdbcUrl, username, password);
+
             createClaimedChunksTable();
+            createChunkSettingsTable();
+
             return true;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -57,11 +60,19 @@ public class MySQL {
     }
 
     public void createClaimedChunksTable() {
-        String sql = "CREATE TABLE IF NOT EXISTS claimed_chunks (" +
-                "id INT AUTO_INCREMENT PRIMARY KEY," +
-                "player_uuid VARCHAR(36)," +
+        String sql = "CREATE TABLE IF NOT EXISTS claimed_chunks ( " +
+                "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                "player_uuid VARCHAR(36), " +
                 "chunk_id INT)";
+        executeStatement(sql);
+    }
 
+    public void createChunkSettingsTable() {
+        String sql = "CREATE TABLE IF NOT EXISTS chunk_settings ( " +
+                "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                "chunk_id INT, " +
+                "setting_name VARCHAR(50), " +
+                "setting_value VARCHAR(255))";
         executeStatement(sql);
     }
 
