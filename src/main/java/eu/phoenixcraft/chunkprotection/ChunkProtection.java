@@ -3,17 +3,20 @@ package eu.phoenixcraft.chunkprotection;
 import eu.phoenixcraft.chunkprotection.command.Claim;
 import eu.phoenixcraft.chunkprotection.command.Unclaim;
 import eu.phoenixcraft.chunkprotection.storage.MySQL;
-import org.bukkit.Location;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+
 
 public final class ChunkProtection extends JavaPlugin {
 
+    private FileConfiguration config;
     private MySQL mysql;
+
     @Override
     public void onEnable() {
         // Plugin startup logic
 
-        this.mysql = new MySQL();
+        this.mysql = new MySQL("5.180.255.9", 20002, "ChunkClaim", "test", "test");
 
         if (mysql.connect()){
             getLogger().info("Database Connect");
@@ -21,7 +24,7 @@ public final class ChunkProtection extends JavaPlugin {
             getLogger().info("Database Disconnect");
         }
 
-        //get Commands
+        // Commands registrieren
         getCommand("claim").setExecutor(new Claim(this));
         getCommand("unclaim").setExecutor(new Unclaim(this));
 
@@ -30,15 +33,14 @@ public final class ChunkProtection extends JavaPlugin {
     @Override
     public void onDisable() {
         // Plugin shutdown logic
-        mysql.disconnect();
+        if (mysql != null) {
+            mysql.disconnect();
+        }
 
     }
 
     public MySQL getMysql(){
         return this.mysql;
     }
-
-
-
 
 }
