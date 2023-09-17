@@ -13,7 +13,7 @@ public final class ChunkProtection extends JavaPlugin {
     public void onEnable() {
         // Plugin startup logic
 
-        this.mysql = new MySQL("5.180.255.9", 20002, "ChunkClaim", "test", "test");
+        this.mysql = new MySQL();
 
         if (mysql.connect()){
             getLogger().info("Database Connect");

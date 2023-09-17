@@ -54,6 +54,7 @@ public class Claim implements CommandExecutor {
             return true;
         }
 
+
         if (addClaimChunk(playerUUID, chunkID, connection)){
             player.sendMessage("Suucesfuly add Chunk");
         } else {
