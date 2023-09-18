@@ -15,9 +15,10 @@ public class ClaimChunk {
 
 
     public static int getChunkID(Location location) {
-        int chunkX = location.getBlockX() >> 4; // Verschieben Sie die X-Koordinate um 4 Bits, um den Chunk zu erhalten
-        int chunkZ = location.getBlockZ() >> 4; // Verschieben Sie die Z-Koordinate um 4 Bits, um den Chunk zu erhalten
-        return chunkX + (chunkZ << 16); // Kombinieren Sie die X- und Z-Koordinaten, um die Chunk-ID zu erstellen
+
+        int chunkX = location.getChunk().getX() >> 4;
+        int chunkZ = location.getChunk().getZ() >> 4;
+        return chunkX + (chunkZ << 16);
     }
 
     public static boolean addClaimChunk(Player player, Connection connection) {
