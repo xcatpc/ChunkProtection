@@ -1,0 +1,10 @@
+storage:
+  type: mysql
+  sqlite:
+    file_name: ChunkClaim.db
+  mysql:
+    ip: 127.0.0.1
+    port: 3306
+    database: ChunkClaim
+    username: root
+    password: root
