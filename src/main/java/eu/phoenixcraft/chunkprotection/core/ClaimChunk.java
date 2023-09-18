@@ -16,6 +16,7 @@ public class ClaimChunk {
 
     public static int getChunkID(Location location) {
 
+        long longchunk = location.getChunk().getChunkKey();
         int chunkX = location.getChunk().getX() >> 4;
         int chunkZ = location.getChunk().getZ() >> 4;
         return chunkX + (chunkZ << 16);
