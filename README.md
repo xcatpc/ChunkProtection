@@ -1,3 +1,2 @@
-minecraft Plugin 
-
-Hiermit kannst du ein Chunk für dich beanspruchen
+I forked this Minecraft Server plugin from:
+https://github.com/ThePhoenixPixel/ChunkProtection
