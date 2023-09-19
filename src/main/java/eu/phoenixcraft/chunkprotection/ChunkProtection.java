@@ -4,8 +4,11 @@ import eu.phoenixcraft.chunkprotection.command.cp_command;
 import eu.phoenixcraft.chunkprotection.core.ev_interaction;
 import eu.phoenixcraft.chunkprotection.core.tabCompleter;
 import eu.phoenixcraft.chunkprotection.storage.MySQL;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+
 
 public final class ChunkProtection extends JavaPlugin {
 
@@ -19,6 +22,9 @@ public final class ChunkProtection extends JavaPlugin {
     public static String db_name;
     public static String db_user;
     public static String db_passwd;
+    public static Economy econ = null;
+
+
 
 
     @Override
@@ -32,6 +38,15 @@ public final class ChunkProtection extends JavaPlugin {
         String ANSI_PURPLE = "\u001B[35m";
         String ANSI_CYAN = "\u001B[36m";
         String ANSI_WHITE = "\u001B[37m";
+
+
+        if (!setupEconomy() ) {
+            getLogger().severe(String.format("[%s] - Disabled due to no Vault dependency found!", getDescription().getName()));
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
+
 
 
         // generate config file
@@ -71,6 +86,18 @@ public final class ChunkProtection extends JavaPlugin {
 
 
 
+    }
+
+    private boolean setupEconomy() {
+        if (getServer().getPluginManager().getPlugin("Vault") == null) {
+            return false;
+        }
+        RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
+        if (rsp == null) {
+            return false;
+        }
+        econ = rsp.getProvider();
+        return econ != null;
     }
 
     @Override

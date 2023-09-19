@@ -1,17 +1,18 @@
 package eu.phoenixcraft.chunkprotection.core;
 
 import eu.phoenixcraft.chunkprotection.storage.MySQL;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.block.Block;
-
 
 import java.util.HashMap;
+import java.util.UUID;
 
 import static eu.phoenixcraft.chunkprotection.core.ClaimChunk.getChunkID;
 import static eu.phoenixcraft.chunkprotection.core.ClaimChunk.getChunkOwner;
@@ -56,12 +57,20 @@ public class ev_interaction implements Listener {
 
         if (!lastChunkID.containsKey(player) || lastChunkID.get(player) != currentChunkID) {
             Player owner = getChunkOwner(currentChunkID, MySQL.connection);
+            ClaimChunk.ChunkInfo chunkinfo = ClaimChunk.getChunkData(currentChunkID, MySQL.connection);
+            if (chunkinfo != null) {
+                Player owner_p =  Bukkit.getPlayer(UUID.fromString(chunkinfo.playerUUID));
+                if (owner_p != null) {
+                    if(chunkinfo.isResell)
+                        player.sendMessage("This property if for sale: $" + chunkinfo.price + ". You can buy with: " + ChatColor.GREEN + "/cp buy");
+                    else
+                        player.sendMessage("This is the property of " + owner_p.getName());
+                }
 
-            if (owner != null) {
-                player.sendMessage("The owner of this chunk is: " + owner.getName());
-            } else {
-                //player.sendMessage("This chunk is unowned. You can claim with /cp claim");
             }
+            else
+                //player.sendMessage("no data in database");
+
 
             lastChunkID.put(player, currentChunkID);
         }

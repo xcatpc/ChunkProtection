@@ -8,7 +8,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.sql.Connection;
-import java.util.UUID;
 
 import static eu.phoenixcraft.chunkprotection.core.ClaimChunk.*;
 
@@ -33,7 +32,7 @@ public class cp_command implements CommandExecutor {
 
         Player player = (Player) sender;
         if(args.length == 0) {
-            player.sendMessage("you need to use arguments: /cp <claim | unclaim>");
+            player.sendMessage("you need to use arguments: /cp <claim | unclaim | info>");
             return true;
         }
 
@@ -74,6 +73,7 @@ public class cp_command implements CommandExecutor {
             }
         }
 
+        // COMMAND INFO ----------------------------------------------------
         else if(args[0].equalsIgnoreCase("info")) {
             Player owner = getChunkOwner( getChunkID( player.getLocation()), connection );
             if(owner != null)
@@ -82,6 +82,44 @@ public class cp_command implements CommandExecutor {
                 player.sendMessage("No owner: claim with /cp claim");
 
         }
+
+
+        // COMMAND RESELL ----------------------------------------------------
+        else if(args[0].equalsIgnoreCase("resell")) {
+            if(args.length < 2) {
+                player.sendMessage("Syntax: /cp resell <amount>");
+            }
+            else {
+                long price = Long.parseLong(args[1]);
+                if(resellChunk(player, price, connection))
+                    player.sendMessage("Plot is now on resale: $" + price);
+                else {
+                    player.sendMessage("That's not your plot!");
+                }
+            }
+        }
+
+
+        // COMMAND BUY ----------------------------------------------------
+        else if(args[0].equalsIgnoreCase("buy")) {
+            Boolean status = buyChunk(player, connection);
+            if(status)
+                player.sendMessage("Plot transfered successfully!");
+            else
+                player.sendMessage("Plot not bought. To less money?");
+        }
+
+
+
+        else {
+            player.sendMessage("Not implemented!");
+        }
+
+
+        /*
+        OfflinePlayer op = player;
+        ChunkProtection.econ.depositPlayer(op, 1000);
+         */
 
         return true;
     }

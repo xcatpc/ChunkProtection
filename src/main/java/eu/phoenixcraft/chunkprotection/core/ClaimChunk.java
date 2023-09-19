@@ -3,7 +3,7 @@ package eu.phoenixcraft.chunkprotection.core;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import java.sql.Connection;
@@ -12,7 +12,22 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
 
+import static eu.phoenixcraft.chunkprotection.ChunkProtection.econ;
+
 public class ClaimChunk {
+
+
+    public static class ChunkInfo {
+        public Boolean isResell;
+        public long price;
+        public String playerUUID;
+
+        public ChunkInfo(Boolean isResell, long price, String playerUUID) {
+            this.isResell = isResell;
+            this.price = price;
+            this.playerUUID = playerUUID;
+        }
+    }
 
 
     public static int[] getPlayerChunk(Location location) {
@@ -96,6 +111,87 @@ public class ClaimChunk {
     // 2 == gehört jemand anderem
     // 3 == ist noch frei
 
+
+
+    public static boolean resellChunk(Player player, long price, Connection connection) {
+        String query = "UPDATE claimed_chunks SET resell = ?, price = ? WHERE chunk_id = ? AND player_uuid = ? AND world_name = ?";
+
+        UUID playerUUID = player.getUniqueId();
+        Location location = player.getLocation();
+        String worldName = player.getWorld().getName();
+        long chunkID = getChunkID(location);
+
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setBoolean(1, true);  // Set resell to true
+            statement.setLong(2, price);
+            statement.setLong(3, chunkID);  // Set the chunk ID
+            statement.setString(4, playerUUID.toString());  // Set the player UUID
+            statement.setString(5, worldName);  // Set the world name
+
+            int updatedRows = statement.executeUpdate();
+
+            if (updatedRows > 0) {
+                // Update erfolgreich
+                return true;
+            } else {
+                // Kein Chunk gefunden, der dem Spieler gehört
+                return false;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Fehler bei der Abfrage
+            return false;
+        }
+    }
+
+
+
+    public static boolean buyChunk(Player player, Connection connection) {
+        UUID playerUUID = player.getUniqueId();
+        Location location = player.getLocation();
+        String worldName = player.getWorld().getName();
+        long chunkID = getChunkID(location);
+
+        ChunkInfo cj = getChunkData(chunkID, connection);
+        String seller = cj.playerUUID;
+        OfflinePlayer o_seller = Bukkit.getOfflinePlayer(UUID.fromString(seller));
+        long price = cj.price;
+
+        // proof if buyer have enough money
+        double buyer_balance = econ.getBalance(player);
+        if(buyer_balance < price) {
+            return false;
+        }
+        econ.withdrawPlayer(player, price);          // subtract money from buyer
+        econ.depositPlayer(o_seller, price);         // give the money to the seller
+
+        String query = "UPDATE claimed_chunks SET resell = ?, player_uuid = ? WHERE chunk_id = ? AND player_uuid = ? AND world_name = ?";
+
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setBoolean(1, false);  // Set resell to true
+            statement.setString(2, playerUUID.toString());
+            statement.setLong(3, chunkID);  // Set the chunk ID
+            statement.setString(4, seller);  // Set the player UUID
+            statement.setString(5, worldName);  // Set the world name
+
+            int updatedRows = statement.executeUpdate();
+
+            if (updatedRows > 0) {
+                // Update erfolgreich
+                return true;
+            } else {
+                // Kein Chunk gefunden, der dem Spieler gehört
+                return false;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Fehler bei der Abfrage
+            return false;
+        }
+    }
+
+
+
     public static int checkChunkOwnership(Player player, Connection connection) {
         String query = "SELECT * FROM claimed_chunks WHERE chunk_id = ? AND world_name = ?";
 
@@ -132,6 +228,7 @@ public class ClaimChunk {
     }
 
 
+
     public static Player getChunkOwner(long chunkID, Connection connection) {
         String query = "SELECT player_uuid FROM claimed_chunks WHERE chunk_id = ?";
 
@@ -164,6 +261,50 @@ public class ClaimChunk {
             return null;
         }
     }
+
+
+
+    public static ChunkInfo getChunkData(long chunkID, Connection connection) {
+        String query = "SELECT * FROM claimed_chunks WHERE chunk_id = ?";
+
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setLong(1, chunkID);
+
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                // Chunk ist bereits beansprucht
+                String playerUUIDString = resultSet.getString("player_uuid");
+                Boolean is_resell = resultSet.getBoolean("resell");
+                long price = resultSet.getLong("price");
+
+                // Finde den Spieler basierend auf seiner UUID
+                Player chunkOwner = Bukkit.getPlayer(UUID.fromString(playerUUIDString));
+
+                if (chunkOwner != null && chunkOwner.isOnline()) {
+                    // Der Spieler ist online und der Chunk gehört ihm
+                    //return chunkOwner;
+                    ChunkInfo ci = new ChunkInfo(is_resell, price, playerUUIDString);
+                    return ci;
+                } else {
+                    // Der Spieler ist offline oder nicht gefunden
+                    return null;
+                }
+            } else {
+                // Chunk ist noch frei
+                return null;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Fehler bei der Abfrage
+            return null;
+        }
+    }
+
+
+
+
+
 
 
 }

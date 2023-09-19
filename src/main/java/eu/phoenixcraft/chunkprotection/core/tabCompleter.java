@@ -18,7 +18,7 @@ public class tabCompleter implements TabCompleter {
         if (command.getName().toString().equals("cp")) {
             if (args.length == 1) {
                 String input = args[0].toLowerCase();
-                List<String> options = Arrays.asList("claim", "unclaim", "info");
+                List<String> options = Arrays.asList("claim", "unclaim", "info", "buy", "resell");
                 List<String> filteredOptions = new ArrayList<>();
                 for (String option : options) {
                     if (option.startsWith(input))
