@@ -3,7 +3,7 @@ https://github.com/ThePhoenixPixel/ChunkProtection
 
 With this plugin you can simply claim plots in a size of 16x16 (X and Z, Y complete)
 
-Commands:
+Commands:\n
 /cp claim              | Claims a Chunk (16x16 Blocks)
 /cp unclaim            | Remove the claim
 /cp info               | Get the owner of the chunk
